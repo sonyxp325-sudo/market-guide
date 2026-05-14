@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="시장 온도">
+<title>시장 과열도 & 현금 비중 가이드</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/[email protected]/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-card: #131826;
+    --bg-elevated: #1a2030;
+    --border: #242c40;
+    --border-light: #2e3850;
+    --text: #e8ecf4;
+    --text-dim: #8b95ad;
+    --text-faint: #5a6580;
+    --accent: #d4a574;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --orange: #fb923c;
+    --red: #ef4444;
+    --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(60px, env(safe-area-inset-bottom)) 16px;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+
+  header { margin-bottom: 20px; padding-top: 8px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+  h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; }
+  .last-check { margin-top: 10px; font-size: 12px; color: var(--text-faint); }
+
+  .change-banner { margin-bottom: 16px; padding: 16px 18px; border-radius: 14px; display: none; animation: slideDown 0.4s ease; }
+  .change-banner.show { display: block; }
+  .change-banner.up { background: linear-gradient(135deg, rgba(251,146,60,0.15), rgba(239,68,68,0.1)); border: 1px solid rgba(251,146,60,0.4); }
+  .change-banner.down { background: linear-gradient(135deg, rgba(74,222,128,0.12), rgba(96,165,250,0.08)); border: 1px solid rgba(74,222,128,0.4); }
+  .banner-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .banner-title .arrow { font-size: 20px; }
+  .change-banner.up .banner-title { color: var(--orange); }
+  .change-banner.down .banner-title { color: var(--green); }
+  .banner-body { font-size: 13px; color: var(--text); line-height: 1.6; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 18px; margin-bottom: 14px; }
+  .card-title { font-size: 12px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card-title::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
+  .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; }
+  .card-title-row .card-title { margin-bottom: 0; }
+
+  .gauge-wrap { text-align: center; padding: 4px 0 12px; }
+  .gauge-svg { width: 100%; max-width: 320px; height: auto; }
+  .gauge-score { font-size: 52px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-top: -52px; margin-bottom: 4px; transition: color 0.4s ease; }
+  .gauge-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px; }
+  .gauge-delta { font-size: 13px; color: var(--text-faint); margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+  .gauge-delta strong { font-weight: 700; }
+  .gauge-verdict { font-size: 15px; font-weight: 600; padding: 10px 18px; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border-light); margin: 0 auto; display: inline-block; }
+
+  .component-grid { display: grid; gap: 8px; }
+  .comp-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 11px 13px; background: var(--bg-elevated); border-radius: 10px; border: 1px solid var(--border); }
+  .comp-name { font-size: 13px; font-weight: 500; }
+  .comp-value { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; }
+  .comp-status { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 600; min-width: 56px; text-align: center; }
+  .comp-source { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .status-fear { background: rgba(74,222,128,0.15); color: var(--green); }
+  .status-neutral { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .status-greed { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .status-extreme { background: rgba(239,68,68,0.15); color: var(--red); }
+  .status-loading { background: var(--border); color: var(--text-faint); }
+  .status-fail { background: rgba(239,68,68,0.1); color: var(--red); }
+
+  .chart-wrap { margin-top: 12px; padding: 14px; background: var(--bg-elevated); border-radius: 12px; }
+  .chart-svg { width: 100%; height: 110px; display: block; }
+  .chart-legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-faint); margin-top: 6px; }
+  .chart-empty { text-align: center; color: var(--text-faint); font-size: 13px; padding: 24px 16px; }
+  .chart-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .stat-box { padding: 9px; background: var(--bg-card); border-radius: 8px; text-align: center; }
+  .stat-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
+  .stat-value { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .cash-rec-main { text-align: center; padding: 22px 14px; background: linear-gradient(135deg, rgba(212,165,116,0.08), rgba(212,165,116,0.02)); border: 1px solid rgba(212,165,116,0.2); border-radius: 14px; margin-bottom: 18px; }
+  .cash-pct { font-size: 44px; font-weight: 800; color: var(--accent); letter-spacing: -0.03em; line-height: 1; }
+  .cash-pct-label { font-size: 13px; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.1em; }
+  .cash-range { font-size: 12px; color: var(--text-faint); margin-top: 10px; }
+  .risk-selector { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 16px; }
+  .risk-btn { padding: 11px 6px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; color: var(--text-dim); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .risk-btn.active { background: rgba(212,165,116,0.12); border-color: var(--accent); color: var(--accent); }
+  .risk-desc { font-size: 11px; color: var(--text-faint); text-align: center; margin-top: 3px; display: block; font-weight: 400; }
+  .cash-input-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin-top: 14px; padding: 13px; background: var(--bg-elevated); border-radius: 10px; }
+  .cash-input-label { font-size: 13px; color: var(--text-dim); }
+  input[type="number"] { width: 75px; padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; font-weight: 600; text-align: right; }
+  input[type="text"], input[type="number"] { -webkit-appearance: none; }
+  input:focus { outline: none; border-color: var(--accent); }
+  .cash-verdict { margin-top: 14px; padding: 13px 15px; border-radius: 10px; font-size: 13px; line-height: 1.6; background: var(--bg-elevated); border-left: 3px solid var(--accent); }
+  .cash-verdict.warn { border-left-color: var(--orange); }
+  .cash-verdict.danger { border-left-color: var(--red); }
+  .cash-verdict.ok { border-left-color: var(--green); }
+  .cash-verdict strong { color: var(--accent); }
+  .cash-verdict.warn strong { color: var(--orange); }
+  .cash-verdict.danger strong { color: var(--red); }
+  .cash-verdict.ok strong { color: var(--green); }
+
+  .btn { padding: 11px 16px; background: var(--accent); color: #1a1a1a; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
+  .btn-small { padding: 7px 11px; background: transparent; border: 1px solid var(--border); color: var(--text-dim); border-radius: 6px; font-family: inherit; font-size: 11px; cursor: pointer; }
+  .btn-small:hover { color: var(--accent); border-color: var(--accent); }
+
+  .setup-box { padding: 14px 15px; background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.3); border-radius: 10px; font-size: 13px; line-height: 1.7; }
+  .setup-box strong { color: var(--blue); }
+  .setup-box code { background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--text); }
+  .setup-box input { width: 100%; margin-top: 10px; padding: 11px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; }
+  .setup-row { display: flex; gap: 8px; margin-top: 8px; }
+  .setup-row .btn { flex: 1; }
+
+  .error-box { padding: 14px 15px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; font-size: 13px; color: var(--red); margin-bottom: 14px; display: none; line-height: 1.6; }
+  .error-box.show { display: block; }
+  .error-box strong { display: block; margin-bottom: 4px; }
+
+  .footer-note { margin-top: 28px; padding: 18px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; font-size: 12px; color: var(--text-faint); line-height: 1.7; }
+  .footer-note strong { color: var(--text-dim); }
+
+  /* 보유 종목 */
+  .holdings-list { display: grid; gap: 8px; margin-top: 8px; }
+  .holding-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 12px 13px; background: var(--bg-elevated); border-radius: 10px; }
+  .holding-ticker { font-weight: 700; font-family: 'SF Mono', Menlo, monospace; font-size: 14px; }
+  .holding-weight { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .holding-info { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .holding-input-grid { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; margin-bottom: 12px; }
+  .holding-input-grid input { padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; }
+  .empty-state { text-align: center; padding: 24px 14px; color: var(--text-faint); font-size: 13px; }
+
+  /* 로딩 상태 */
+  .loading-skeleton {
+    background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--border) 50%, var(--bg-elevated) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">Market Temperature</div>
+    <h1>시장 과열도 & 현금 비중 가이드</h1>
+    <div class="subtitle">매일 한국시간 22시 자동 업데이트</div>
+    <div class="last-check" id="lastCheck">데이터 로딩 중...</div>
+  </header>
+
+  <div class="error-box" id="errorBox"></div>
+  <div class="change-banner" id="changeBanner">
+    <div class="banner-title" id="bannerTitle"></div>
+    <div class="banner-body" id="bannerBody"></div>
+  </div>
+
+  <!-- 저장소 설정 (처음 한 번만) -->
+  <div class="card" id="setupCard">
+    <div class="card-title">데이터 소스 설정</div>
+    <div class="setup-box">
+      <strong>본인의 GitHub 저장소</strong>를 입력하세요. 처음 한 번만 하면 폰이 기억해요.<br>
+      형식: <code>username/repo-name</code>
+      <input type="text" id="repoInput" placeholder="예: myname/market-guide" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="setup-row">
+        <button class="btn" onclick="saveRepoAndLoad()">불러오기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 시장 과열도 -->
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">시장 종합 과열도</div>
+      <button class="btn-small" onclick="reloadData()">↻ 새로고침</button>
+    </div>
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="0 0 200 110">
+        <defs>
+          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#4ade80"/>
+            <stop offset="40%" stop-color="#fbbf24"/>
+            <stop offset="70%" stop-color="#fb923c"/>
+            <stop offset="100%" stop-color="#ef4444"/>
+          </linearGradient>
+        </defs>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#242c40" stroke-width="14" stroke-linecap="round"/>
+        <path id="gaugeFill" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 251" style="transition: stroke-dasharray 0.8s ease;"/>
+        <circle id="gaugeNeedle" cx="20" cy="100" r="5" fill="#e8ecf4" style="transition: all 0.8s ease;"/>
+      </svg>
+      <div class="gauge-score" id="totalScore">—</div>
+      <div class="gauge-label">/ 100</div>
+      <div class="gauge-delta" id="gaugeDelta"></div>
+      <div class="gauge-verdict" id="totalVerdict">로딩 중</div>
+    </div>
+
+    <div class="component-grid" id="components">
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">공포·탐욕 추정치</div>
+          <div class="comp-source" id="fgi-src">VIX + 추세 합성</div>
+        </div>
+        <div class="comp-value" id="fgi-value">—</div>
+        <div class="comp-status status-loading" id="fgi-status">대기</div>
+      </div>
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">VIX 변동성 지수</div>
+          <div class="comp-source" id="vix-src">Yahoo Finance ^VIX</div>
+        </div>
+        <div class="comp-value" id="vix-value">—</div>
+        <div class="comp-status status-loading" id="vix-status">대기</div>
+      </div>
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">S&P 500 PER</div>
+          <div class="comp-source" id="per-src">SPY trailingPE</div>
+        </div>
+        <div class="comp-value" id="per-value">—</div>
+        <div class="comp-status status-loading" id="per-status">대기</div>
+      </div>
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">S&P 500 추세</div>
+          <div class="comp-source" id="ma-src">200일선 대비</div>
+        </div>
+        <div class="comp-value" id="ma-value">—</div>
+        <div class="comp-status status-loading" id="ma-status">대기</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 추이 -->
+  <div class="card">
+    <div class="card-title">최근 추이</div>
+    <div id="chartContainer">
+      <div class="chart-empty">데이터가 쌓이면 추이가 표시돼요</div>
+    </div>
+  </div>
+
+  <!-- 권장 현금 비중 -->
+  <div class="card">
+    <div class="card-title">권장 현금 비중</div>
+    <div class="risk-selector">
+      <button class="risk-btn" data-risk="aggressive" onclick="setRisk('aggressive')">
+        공격형<span class="risk-desc">5~30%</span>
+      </button>
+      <button class="risk-btn active" data-risk="balanced" onclick="setRisk('balanced')">
+        중립형<span class="risk-desc">10~50%</span>
+      </button>
+      <button class="risk-btn" data-risk="defensive" onclick="setRisk('defensive')">
+        방어형<span class="risk-desc">20~70%</span>
+      </button>
+    </div>
+    <div class="cash-rec-main">
+      <div class="cash-pct" id="recCash">—</div>
+      <div class="cash-pct-label">권장 현금 비중</div>
+      <div class="cash-range" id="cashRange">시장 점수에 따라 자동 조정</div>
+    </div>
+    <div class="cash-input-row">
+      <div class="cash-input-label">현재 보유 현금 비중</div>
+      <div>
+        <input type="number" id="currentCash" min="0" max="100" value="10" inputmode="numeric" onchange="updateCashVerdict()"> <span style="color:var(--text-dim);">%</span>
+      </div>
+    </div>
+    <div class="cash-verdict" id="cashVerdict">
+      시장 점수가 로딩되면 권장 사항이 표시돼요.
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <strong>이 도구의 한계 — 꼭 읽어주세요</strong><br>
+    이 점수는 "정답"이 아니라 <strong>감정에 휘둘리지 않기 위한 닻</strong>이에요. 시장은 과열 상태에서도 1~2년 더 오를 수 있고, 공포 구간에서도 더 빠질 수 있어요. 매도 신호가 아니라 <strong>자산 배분 점검 도구</strong>로 쓰세요.
+  </div>
+</div>
+
+<script>
+let MARKET_SCORE = null;
+let MARKET_DATA = null;
+let RISK_PROFILE = 'balanced';
+let GITHUB_REPO = '';
+let HISTORY = [];
+
+// ===== 점수 → 단계 =====
+function stageLabel(s) {
+  return { fear: '공포', neutral: '중립', greed: '탐욕', extreme: '극과열' }[s] || '—';
+}
+function stageFromScore(s) {
+  if (s === null || s === undefined) return null;
+  if (s < 25) return 'fear';
+  if (s < 50) return 'neutral';
+  if (s < 75) return 'greed';
+  return 'extreme';
+}
+
+// ===== 컴포넌트 표시 =====
+function setComponent(id, displayValue, score, source) {
+  document.getElementById(id + '-value').textContent = displayValue || '—';
+  if (source) document.getElementById(id + '-src').textContent = source;
+
+  const el = document.getElementById(id + '-status');
+  if (score === null || score === undefined) {
+    el.className = 'comp-status status-fail';
+    el.textContent = '실패';
+  } else {
+    const stage = stageFromScore(score);
+    el.className = 'comp-status status-' + stage;
+    el.textContent = stageLabel(stage);
+  }
+}
+
+// ===== 게이지 =====
+function updateGauge(score) {
+  if (score === null) {
+    document.getElementById('totalScore').textContent = '—';
+    document.getElementById('totalVerdict').textContent = '데이터 없음';
+    return;
+  }
+  const arcLen = 251;
+  const pct = score / 100;
+  document.getElementById('gaugeFill').setAttribute('stroke-dasharray', `${arcLen * pct} ${arcLen}`);
+
+  const scoreEl = document.getElementById('totalScore');
+  scoreEl.textContent = score;
+  const stage = stageFromScore(score);
+  const colors = { fear: 'var(--green)', neutral: 'var(--yellow)', greed: 'var(--orange)', extreme: 'var(--red)' };
+  scoreEl.style.color = colors[stage];
+
+  const verdicts = {
+    fear: '🛡 공포 구간 · 매수 검토',
+    neutral: '⚖ 중립 구간 · 평소 유지',
+    greed: '⚠ 과열 시작 · 비중 점검',
+    extreme: '🔥 극과열 · 적극 방어'
+  };
+  document.getElementById('totalVerdict').textContent = verdicts[stage];
+
+  const angle = -180 + (180 * pct);
+  const rad = angle * Math.PI / 180;
+  document.getElementById('gaugeNeedle').setAttribute('cx', 100 + 80 * Math.cos(rad));
+  document.getElementById('gaugeNeedle').setAttribute('cy', 100 + 80 * Math.sin(rad));
+}
+
+// ===== 권장 현금 =====
+function recommendedCash(score, profile) {
+  const ranges = { aggressive: [5, 30], balanced: [10, 50], defensive: [20, 70] };
+  const [low, high] = ranges[profile];
+  return Math.round(low + (high - low) * (score / 100));
+}
+function setRisk(profile) {
+  RISK_PROFILE = profile;
+  try { localStorage.setItem('risk_profile', profile); } catch(e) {}
+  document.querySelectorAll('.risk-btn').forEach(b => b.classList.toggle('active', b.dataset.risk === profile));
+  updateCashRecommendation();
+}
+function updateCashRecommendation() {
+  if (MARKET_SCORE === null) return;
+  const rec = recommendedCash(MARKET_SCORE, RISK_PROFILE);
+  document.getElementById('recCash').textContent = rec + '%';
+  const ranges = { aggressive: '5~30%', balanced: '10~50%', defensive: '20~70%' };
+  const labels = { aggressive: '공격형', balanced: '중립형', defensive: '방어형' };
+  document.getElementById('cashRange').textContent = `${labels[RISK_PROFILE]} 범위 ${ranges[RISK_PROFILE]} 내`;
+  updateCashVerdict();
+}
+function updateCashVerdict() {
+  if (MARKET_SCORE === null) return;
+  const rec = recommendedCash(MARKET_SCORE, RISK_PROFILE);
+  const cur = parseFloat(document.getElementById('currentCash').value) || 0;
+  try { localStorage.setItem('current_cash', cur); } catch(e) {}
+  const diff = rec - cur;
+  const v = document.getElementById('cashVerdict');
+
+  if (Math.abs(diff) <= 5) {
+    v.className = 'cash-verdict ok';
+    v.innerHTML = `<strong>현재 비중 적정</strong> · 권장 ${rec}%, 보유 ${cur}%. 그대로 유지하셔도 좋아요.`;
+  } else if (diff > 5 && diff <= 15) {
+    v.className = 'cash-verdict warn';
+    v.innerHTML = `<strong>현금 ${diff}%p 더 확보 권장</strong> · 일부 종목 차익실현 또는 신규 매수 보류 고려.`;
+  } else if (diff > 15) {
+    v.className = 'cash-verdict danger';
+    v.innerHTML = `<strong>현금 부족 · ${diff}%p 추가 확보 필요</strong> · 단계적으로 비중을 줄이세요.`;
+  } else if (diff < -5 && diff >= -15) {
+    v.className = 'cash-verdict warn';
+    v.innerHTML = `<strong>현금이 다소 많음</strong> · ${Math.abs(diff)}%p 정도 분할 매수 기회를 살펴봐도 좋아요.`;
+  } else {
+    v.className = 'cash-verdict warn';
+    v.innerHTML = `<strong>현금이 과도하게 많음</strong> · 분할 매수 전략을 고려해보세요.`;
+  }
+}
+
+// ===== 차트 =====
+function renderChart() {
+  const container = document.getElementById('chartContainer');
+  if (HISTORY.length < 2) {
+    container.innerHTML = `<div class="chart-empty">${HISTORY.length === 0 ? '아직 기록 없음' : '내일이면 추이가 표시돼요'}</div>`;
+    return;
+  }
+
+  const recent = HISTORY.slice(-30);
+  const w = 100, h = 100, pad = 4;
+  const xStep = (w - pad * 2) / Math.max(recent.length - 1, 1);
+
+  let pathD = '', dots = '';
+  recent.forEach((entry, i) => {
+    const x = pad + i * xStep;
+    const y = pad + (h - pad * 2) * (1 - entry.score / 100);
+    pathD += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+    const colors = { fear: '#4ade80', neutral: '#fbbf24', greed: '#fb923c', extreme: '#ef4444' };
+    const isLast = i === recent.length - 1;
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isLast ? 2.2 : 1.2}" fill="${colors[entry.stage]}" ${isLast ? 'stroke="#e8ecf4" stroke-width="0.8"' : ''}/>`;
+  });
+
+  const zones = `
+    <rect x="0" y="${pad}" width="${w}" height="${(h-pad*2)*0.25}" fill="rgba(239,68,68,0.05)"/>
+    <rect x="0" y="${pad + (h-pad*2)*0.25}" width="${w}" height="${(h-pad*2)*0.25}" fill="rgba(251,146,60,0.04)"/>
+    <rect x="0" y="${pad + (h-pad*2)*0.5}" width="${w}" height="${(h-pad*2)*0.25}" fill="rgba(251,191,36,0.04)"/>
+    <rect x="0" y="${pad + (h-pad*2)*0.75}" width="${w}" height="${(h-pad*2)*0.25}" fill="rgba(74,222,128,0.04)"/>
+  `;
+
+  const scores = recent.map(e => e.score);
+  const avg = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length);
+  const max = Math.max(...scores);
+  const min = Math.min(...scores);
+  const firstDate = recent[0].date.slice(5).replace('-','/');
+  const lastDate = recent[recent.length-1].date.slice(5).replace('-','/');
+
+  container.innerHTML = `
+    <div class="chart-wrap">
+      <svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+        ${zones}
+        <path d="${pathD}" fill="none" stroke="#d4a574" stroke-width="0.8" stroke-linejoin="round"/>
+        ${dots}
+      </svg>
+      <div class="chart-legend">
+        <span>${firstDate}</span>
+        <span>최근 ${recent.length}일</span>
+        <span>${lastDate}</span>
+      </div>
+      <div class="chart-stats">
+        <div class="stat-box"><div class="stat-label">평균</div><div class="stat-value">${avg}</div></div>
+        <div class="stat-box"><div class="stat-label">최고</div><div class="stat-value" style="color:var(--red);">${max}</div></div>
+        <div class="stat-box"><div class="stat-label">최저</div><div class="stat-value" style="color:var(--green);">${min}</div></div>
+      </div>
+    </div>
+  `;
+}
+
+// ===== 단계 전환 배너 =====
+function checkStageChange() {
+  if (HISTORY.length < 2 || MARKET_SCORE === null) return;
+  const prev = HISTORY[HISTORY.length - 2];
+  const curStage = stageFromScore(MARKET_SCORE);
+  if (!prev || prev.stage === curStage) return;
+
+  const stageOrder = ['fear', 'neutral', 'greed', 'extreme'];
+  const prevIdx = stageOrder.indexOf(prev.stage);
+  const curIdx = stageOrder.indexOf(curStage);
+
+  const banner = document.getElementById('changeBanner');
+  const title = document.getElementById('bannerTitle');
+  const body = document.getElementById('bannerBody');
+  banner.classList.remove('up', 'down');
+
+  if (curIdx > prevIdx) {
+    banner.classList.add('up', 'show');
+    title.innerHTML = `<span class="arrow">↑</span> 단계 상승: ${stageLabel(prev.stage)} → ${stageLabel(curStage)}`;
+    if (curStage === 'extreme') body.innerHTML = `시장이 <strong>극과열</strong>에 진입했어요. 현금 비중을 다시 점검해보세요.`;
+    else if (curStage === 'greed') body.innerHTML = `시장이 <strong>과열 구간</strong>으로 들어왔어요. 신규 매수보다 보유 점검을.`;
+    else body.innerHTML = `시장 온도가 한 단계 올라갔어요.`;
+  } else {
+    banner.classList.add('down', 'show');
+    title.innerHTML = `<span class="arrow">↓</span> 단계 하락: ${stageLabel(prev.stage)} → ${stageLabel(curStage)}`;
+    if (curStage === 'fear') body.innerHTML = `시장이 <strong>공포 구간</strong>에 진입. 분할 매수 기회 검토.`;
+    else body.innerHTML = `시장 온도가 한 단계 내려갔어요.`;
+  }
+}
+
+function updateDelta() {
+  if (HISTORY.length < 2 || MARKET_SCORE === null) {
+    document.getElementById('gaugeDelta').textContent = '';
+    return;
+  }
+  const prev = HISTORY[HISTORY.length - 2];
+  const d = MARKET_SCORE - prev.score;
+  const el = document.getElementById('gaugeDelta');
+  if (d === 0) el.innerHTML = `직전 대비 <strong>변화 없음</strong>`;
+  else if (d > 0) el.innerHTML = `직전 대비 <strong style="color:var(--orange);">+${d}</strong>`;
+  else el.innerHTML = `직전 대비 <strong style="color:var(--green);">${d}</strong>`;
+}
+
+// ===== GitHub raw에서 데이터 가져오기 =====
+function rawUrl(path) {
+  // 캐시 방지 위해 timestamp 붙임
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${path}?t=${Date.now()}`;
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.classList.add('show');
+  box.innerHTML = msg;
+}
+function hideError() {
+  document.getElementById('errorBox').classList.remove('show');
+}
+
+async function loadMarketData() {
+  if (!GITHUB_REPO) {
+    showError('<strong>저장소 설정이 필요해요</strong>위에서 GitHub 저장소를 입력해주세요.');
+    return;
+  }
+
+  hideError();
+  document.getElementById('lastCheck').textContent = '데이터 로딩 중...';
+
+  try {
+    // market.json 로드
+    const [marketRes, historyRes] = await Promise.all([
+      fetch(rawUrl('data/market.json')),
+      fetch(rawUrl('data/history.json')).catch(() => null)
+    ]);
+
+    if (!marketRes.ok) {
+      throw new Error(`market.json 로드 실패 (${marketRes.status}). 저장소 주소가 맞는지, Actions가 한 번이라도 실행됐는지 확인하세요.`);
+    }
+
+    MARKET_DATA = await marketRes.json();
+
+    // history 로드 (없을 수도 있음)
+    if (historyRes && historyRes.ok) {
+      try { HISTORY = await historyRes.json(); } catch(e) { HISTORY = []; }
+    } else {
+      HISTORY = [];
+    }
+
+    renderData();
+  } catch (e) {
+    showError(`<strong>로딩 실패</strong>${e.message}`);
+    document.getElementById('lastCheck').textContent = '로딩 실패';
+  }
+}
+
+function renderData() {
+  if (!MARKET_DATA) return;
+
+  const d = MARKET_DATA;
+  document.getElementById('lastCheck').textContent = `마지막 업데이트: ${d.updated_time_kst}`;
+
+  // 컴포넌트 채우기
+  const c = d.components;
+  setComponent('fgi', c.fgi.display, c.fgi.score, c.fgi.source);
+  setComponent('vix', c.vix.display, c.vix.score, c.vix.source);
+  setComponent('per', c.per.display, c.per.score, c.per.source);
+  setComponent('ma', c.ma.display, c.ma.score, c.ma.source);
+
+  // 종합 점수
+  MARKET_SCORE = d.total_score;
+  updateGauge(MARKET_SCORE);
+
+  // 추이, 변화량, 단계 전환
+  renderChart();
+  updateDelta();
+  checkStageChange();
+
+  // 권장 현금
+  updateCashRecommendation();
+}
+
+function reloadData() { loadMarketData(); }
+
+function saveRepoAndLoad() {
+  const v = document.getElementById('repoInput').value.trim();
+  if (!v || !/^[\w.-]+\/[\w.-]+$/.test(v)) {
+    alert('형식이 맞지 않아요. 예: username/repo-name');
+    return;
+  }
+  GITHUB_REPO = v;
+  try { localStorage.setItem('github_repo', v); } catch(e) {}
+  loadMarketData();
+}
+
+// ===== 초기화 =====
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const savedRepo = localStorage.getItem('github_repo');
+    if (savedRepo) {
+      GITHUB_REPO = savedRepo;
+      document.getElementById('repoInput').value = savedRepo;
+    }
+    const savedRisk = localStorage.getItem('risk_profile');
+    if (savedRisk) setRisk(savedRisk);
+    const savedCash = localStorage.getItem('current_cash');
+    if (savedCash) document.getElementById('currentCash').value = savedCash;
+
+    if (GITHUB_REPO) loadMarketData();
+  } catch(e) { console.warn(e); }
+});
+</script>
+</body>
+</html>
