@@ -1,0 +1,37 @@
+{
+  "updated_at": "2026-05-15T21:24:57.073363+09:00",
+  "updated_date": "2026-05-15",
+  "updated_time_kst": "2026-05-15 21:24 KST",
+  "total_score": 79,
+  "stage": "extreme",
+  "components": {
+    "fgi": {
+      "value": 76,
+      "score": 76,
+      "source": "VIX + 추세 합성",
+      "display": "76 (추정)"
+    },
+    "vix": {
+      "value": 19.079999923706055,
+      "score": 69,
+      "source": "Yahoo Finance ^VIX",
+      "display": "19.08"
+    },
+    "per": {
+      "value": 28.11,
+      "score": 90,
+      "source": "SPY",
+      "display": "28.1"
+    },
+    "ma": {
+      "value": 10.73,
+      "score": 83,
+      "source": "Yahoo Finance ^GSPC 200일선",
+      "display": "+10.7%",
+      "extra": {
+        "price": 7501.24,
+        "ma200": 6774.64
+      }
+    }
+  }
+}
