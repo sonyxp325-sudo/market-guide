@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-05-25T01:40:49.077038+09:00",
-  "updated_date": "2026-05-25",
-  "updated_time_kst": "2026-05-25 01:40 KST",
+  "updated_at": "2026-05-26T03:22:06.290469+09:00",
+  "updated_date": "2026-05-26",
+  "updated_time_kst": "2026-05-26 03:22 KST",
   "total_score": 82,
   "stage": "extreme",
   "components": {
@@ -12,10 +12,10 @@
       "display": "80 (추정)"
     },
     "vix": {
-      "value": 16.700000762939453,
+      "value": 16.59000015258789,
       "score": 80,
       "source": "Yahoo Finance ^VIX",
-      "display": "16.70"
+      "display": "16.59"
     },
     "per": {
       "value": 28.01,
