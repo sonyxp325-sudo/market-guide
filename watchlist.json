@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "base_currency": "KRW",
+    "last_updated": "2026-07-08",
+    "card_layout": "B_reason_first",
+    "note": "상헌님 투자 논리 아카이브 + 일일 모니터링 설정. thesis/entry_trigger 등 논리 필드는 전부 선택(optional). ticker만 있어도 데이터·지표·신호등은 나옴. 논리를 넣으면 '진입 트리거 알림'과 '논리 훼손 매도' 판정이 켜짐."
+  },
+
+  "config": {
+    "fx": { "pair": "USD/KRW", "source": "yfinance", "symbol": "KRW=X", "delay": "~15min" },
+    "data_sources": {
+      "kr_price_and_flow": "pykrx (종가·투자자별 순매매, 장마감 후 확정)",
+      "us_price": "yfinance",
+      "technical_indicators": "ta 라이브러리 (OHLC에서 직접 계산 → 소스 불일치 없음)"
+    },
+    "layers": ["fundamental", "supply_demand", "technical", "macro"],
+    "confidence": {
+      "formula": "signal_alignment × data_reliability",
+      "signal_alignment": {
+        "high": "4개 층 중 3~4개 동일 방향",
+        "mid": "2개 동일, 나머지 혼조",
+        "low": "신호 충돌 또는 데이터 부실"
+      },
+      "data_reliability": {
+        "high": "확정값 (캡처 / 장마감 pykrx)",
+        "low": "장중값 또는 검색 추정치"
+      },
+      "disclaimer": "확신도는 '우리 규칙 부합도'이지 '수익 보장'이 아님."
+    },
+    "swing_defaults": { "take_profit_pct": 7, "stop_loss_pct": -4, "max_bucket_pct": 20 },
+    "swing_template": {
+      "_comment": "스윙(단기) 종목 등록 시 형식. 지금은 실행 안 함 — 시장 진정 후 소액부터. 손절선 필수.",
+      "ticker": "EXAMPLE",
+      "strategy": "swing",
+      "status": "watch",
+      "entry_trigger": "RSI<30에서 반등 전환 / 저항선 돌파",
+      "take_profit_pct": 7,
+      "stop_loss_pct": -4,
+      "horizon": "수일~수주"
+    }
+  },
+
+  "holdings": [
+    {
+      "_example_type": "FULL — 논리까지 등록한 풀 버전",
+      "ticker": "GOOGL",
+      "name": "알파벳",
+      "market": "US",
+      "strategy": "core",
+      "status": "hold",
+      "position": { "shares": 8, "avg_cost": 331.14, "currency": "USD" },
+      "thesis": "검색·유튜브 지배력 + 클라우드/AI 성장(클라우드 +63%), 실적 재가속. 포트 앵커(확신 1등).",
+      "entry_trigger": "$338 눌림 시 지정가 분할(2주+2주). 급등 추격 금지.",
+      "valuation_note": "선행 PER 약 28~30배, 컨센 목표 ~$430. 아직 고평가 아님.",
+      "sell_plan": [
+        { "type": "trim", "level": 470, "portion_pct": 20, "reason": "선행 PER ~33-34배, 컨센 상회" },
+        { "type": "trim", "level": 510, "portion_pct": 20, "reason": "유포리아, PER ~36배" }
+      ],
+      "thesis_break_signal": "클라우드 성장 50%대 이하 둔화 / 반독점 실제 사업분할",
+      "catalysts": [ { "event": "실적", "date": "2026-07-28" } ]
+    },
+
+    {
+      "_example_type": "MINIMAL — 티커만 등록한 최소 버전 (논리 나중에 저한테 물어보며 채우면 됨)",
+      "ticker": "034020",
+      "name": "두산에너빌리티",
+      "market": "KR",
+      "strategy": "core",
+      "status": "watch"
+    },
+
+    {
+      "ticker": "005930",
+      "name": "삼성전자",
+      "market": "KR",
+      "strategy": "core",
+      "status": "hold",
+      "position": { "shares": 2, "avg_cost": 295000, "currency": "KRW" },
+      "thesis": "AI 메모리 슈퍼사이클(HBM), D램·낸드 가격 급등, 사이클 이익 대비 저평가.",
+      "entry_trigger": "2차: 270,000원 이하 + 진정신호 2/5 동시 충족 시 4주.",
+      "valuation_note": "2분기 실적 서프라이즈(영업이익 89.4조, 마진 50%+, 성과급 충당금 제외 시 실질 100조+).",
+      "custom_signals": {
+        "name": "진정 체크리스트 (수급)",
+        "rule": "5개 중 2개 이상 개선 시 매수 집행. 장마감 후 확정값으로만 판정.",
+        "items": [
+          "외국인 순매도 감소/전환",
+          "코스피 플러스 마감 또는 아래꼬리",
+          "삼성 종가 반등/바닥 다지기",
+          "서킷브레이커 없는 조용한 날",
+          "외국인·기관 매수 가세"
+        ]
+      },
+      "thesis_break_signal": "HBM 경쟁력 훼손(엔비디아 납품 지위 약화) / 메모리 사이클 하강",
+      "catalysts": [ { "event": "SK하이닉스 실적", "date": "2026-07-23" } ]
+    },
+
+    {
+      "ticker": "RKLB",
+      "name": "로켓랩",
+      "market": "US",
+      "strategy": "core",
+      "status": "hold",
+      "position": { "shares": 5, "avg_cost": 94.81, "currency": "USD" },
+      "thesis": "수직통합 우주 서비스 종합기업(이리듐 인수로 흑자 반복매출 편입) + 방산 백로그. [갱신: 기존 '재활용 로켓 2위'에서 논리 업데이트됨]",
+      "entry_trigger": "1차 $80~82 5주, 2차 $73~77 5주. 재원=원화 환전(구글 매도 아님). 추격 금지.",
+      "valuation_note": "적자, P/S 프리미엄(전통 적정가의 약 3배). RSI 30대 과매도권. 지지 $69~71, 저항 $95.",
+      "thesis_break_signal": "이리듐 딜 무산 / 브릿지론 재융자 실패·대규모 유증(희석) / Neutron 무한 연기",
+      "catalysts": [
+        { "event": "실적", "date": "2026-08-06" },
+        { "event": "Neutron 첫 발사", "date": "2026-Q4 예상(지연 가능)" }
+      ]
+    },
+
+    {
+      "ticker": "SMR",
+      "name": "뉴스케일파워",
+      "market": "US",
+      "strategy": "core",
+      "status": "hold",
+      "position": { "shares": 50, "avg_cost": 11.45, "currency": "USD" },
+      "thesis": "미 NRC 설계인증 유일 SMR(선점 해자), AI 데이터센터 전력난 수혜.",
+      "entry_trigger": "추가매수는 '가격' 아니라 '논리' 조건: 첫 상업계약(무취소·무유증) 확인 시. 가격만 보고 물타기 금지.",
+      "valuation_note": "적자 스토리주. 애널 목표 $7~$19 극단 분산. 비중 7%로 관리.",
+      "thesis_break_signal": "핵심 프로젝트(TVA/ENTRA1, RoPower) 취소 / 대규모 유증",
+      "catalysts": [ { "event": "첫 상업계약 발표", "date": "미정(핵심 촉매)" } ]
+    }
+  ]
+}
