@@ -1,36 +1,36 @@
 {
-  "updated_at": "2026-11-23T05:12:05.176974+09:00",
-  "updated_date": "2026-11-23",
-  "updated_time_kst": "2026-11-23 05:12 KST",
-  "total_score": 19,
-  "stage": "fear",
+  "updated_at": "2026-11-24T09:38:14.234522+09:00",
+  "updated_date": "2026-11-24",
+  "updated_time_kst": "2026-11-24 09:38 KST",
+  "total_score": 42,
+  "stage": "neutral",
   "components": {
     "fgi": {
-      "value": 8,
-      "score": 8,
+      "value": 35,
+      "score": 35,
       "source": "VIX + 추세 합성",
-      "display": "8 (추정)"
+      "display": "35 (추정)"
     },
     "vix": {
-      "value": 35.88999938964844,
-      "score": 0,
+      "value": 26.6200008392334,
+      "score": 36,
       "source": "Yahoo Finance ^VIX",
-      "display": "35.89"
+      "display": "26.62"
     },
     "per": {
-      "value": 21.95,
-      "score": 55,
+      "value": 22.98,
+      "score": 61,
       "source": "SPY",
-      "display": "21.9"
+      "display": "23.0"
     },
     "ma": {
-      "value": -5.96,
-      "score": 16,
+      "value": -1.54,
+      "score": 34,
       "source": "Yahoo Finance ^GSPC 200일선",
-      "display": "-6.0%",
+      "display": "-1.5%",
       "extra": {
-        "price": 6910.39,
-        "ma200": 7348.58
+        "price": 7237.17,
+        "ma200": 7350.1
       }
     }
   }
