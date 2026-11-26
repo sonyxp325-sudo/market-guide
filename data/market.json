@@ -1,21 +1,21 @@
 {
-  "updated_at": "2026-11-26T07:12:14.880176+09:00",
-  "updated_date": "2026-11-26",
-  "updated_time_kst": "2026-11-26 07:12 KST",
-  "total_score": 37,
+  "updated_at": "2026-11-27T07:10:05.651283+09:00",
+  "updated_date": "2026-11-27",
+  "updated_time_kst": "2026-11-27 07:10 KST",
+  "total_score": 41,
   "stage": "neutral",
   "components": {
     "fgi": {
-      "value": 30,
-      "score": 30,
+      "value": 34,
+      "score": 34,
       "source": "VIX + 추세 합성",
-      "display": "30 (추정)"
+      "display": "34 (추정)"
     },
     "vix": {
-      "value": 28.290000915527344,
-      "score": 29,
+      "value": 26.799999237060547,
+      "score": 36,
       "source": "Yahoo Finance ^VIX",
-      "display": "28.29"
+      "display": "26.80"
     },
     "per": {
       "value": 22.8,
